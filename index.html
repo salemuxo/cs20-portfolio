@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="stylesheets/indexstyle.css" />
+    <title>Portfolio</title>
+  </head>
+  <body>
+    <!-- load jquery for navbar -->
+    <script src="//code.jquery.com/jquery.min.js"></script>
+    <div id="nav-placeholder"></div>
+    <!-- replace nav-placeholder with navbar.html -->
+    <script>
+      $.get("navbar.html", function (data) {
+        $("#nav-placeholder").replaceWith(data);
+      });
+    </script>
+    <div>
+      <h1>Salem Stockdale CS20 Portfolio</h1>
+      <h2>stuff</h2>
+      <p>things</p>
+    </div>
+  </body>
+</html>
