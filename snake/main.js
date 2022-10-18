@@ -7,14 +7,11 @@ cnv.height = 600;
 ctx.font = "40px Helvetica";
 ctx.textAlign = "center";
 const fps = 10;
-let xOut = document.getElementById("xOut");
-let yOut = document.getElementById("yOut");
+let scoreOut = document.getElementById("scoreOut");
 
 // OBJECTS
 
 let player = {
-  x: 300,
-  y: 300,
   w: 25,
   h: 25,
   xSpeed: 0,
@@ -23,6 +20,14 @@ let player = {
   alive: true,
   length: 1,
 };
+
+let segments = [
+  { x: 300, y: 300 },
+  { x: 275, y: 300 },
+  { x: 250, y: 300 },
+];
+
+let storedCoords = [];
 
 let nextPrize = {
   x: 0,
@@ -42,7 +47,7 @@ ranPrize();
 requestAnimationFrame(animate);
 function animate() {
   movePlr();
-  checkPrize();
+  segments.forEach(checkPrize);
 
   clearCnv("white");
   drawPlr();
@@ -85,23 +90,28 @@ function changeSpeed(xs, ys) {
 
 // randomize nextPrize location
 function ranPrize() {
-  nextPrize.x = randomMul(0, cnv.width, 25);
-  nextPrize.y = randomMul(0, cnv.height, 25);
+  nextPrize.x = randomMul(0, cnv.width - 25, 25);
+  nextPrize.y = randomMul(0, cnv.height - 25, 25);
 }
 
 function killPlr() {
   player.alive = false;
-
-  console.log(
-    `Dead! X: ${player.x}, XS: ${player.xSpeed}, Y: ${player.y}, YS: ${player.ySpeed}`
-  );
 }
 
-function checkPrize() {
-  if (player.x === nextPrize.x && player.y === nextPrize.y) {
+// check if player is touching prize -> update length + score, randomize new prize
+function checkPrize(segment) {
+  if (segment.x === nextPrize.x && segment.y === nextPrize.y) {
     ranPrize();
     player.length++;
+    scoreOut.innerHTML = player.length - 1;
   }
+}
+
+function newSegment(x, y) {
+  return {
+    x: x,
+    y: y,
+  };
 }
 
 // ANIMATE FUNCTIONS
@@ -120,28 +130,38 @@ function clearCnv(clr) {
 
 // draw player at player location
 function drawPlr() {
-  ctx.fillStyle = "black";
-  ctx.fillRect(player.x, player.y, player.w, player.h);
+  segments.forEach(function (segment) {
+    ctx.fillStyle = "black";
+    ctx.fillRect(segment.x, segment.y, player.w, player.h);
+  });
 }
 
 // move player if within safeBounds + going correct direction if on edge
 function movePlr() {
-  if (player.x > safeBounds.xmin && player.x < safeBounds.xmax)
-    player.x += player.xSpeed;
-  else if (player.x >= safeBounds.xmax && player.xSpeed < 0)
-    player.x += player.xSpeed;
-  else if (player.x <= safeBounds.xmin && player.xSpeed > 0)
-    player.x += player.xSpeed;
+  if (
+    segments[0].x > safeBounds.xmin &&
+    segments[0].x < safeBounds.xmax &&
+    player.xSpeed != 0
+  )
+    moveSeg();
+  else if (segments[0].x >= safeBounds.xmax && player.xSpeed < 0) moveSeg();
+  else if (segments[0].x <= safeBounds.xmin && player.xSpeed > 0) moveSeg();
   else if (player.xSpeed != 0) killPlr();
 
-  if (player.y > safeBounds.ymin && player.y < safeBounds.ymax)
-    player.y += player.ySpeed;
-  else if (player.y >= safeBounds.ymax && player.ySpeed < 0)
-    player.y += player.ySpeed;
-  else if (player.y <= safeBounds.ymin && player.ySpeed > 0)
-    player.y += player.ySpeed;
+  if (
+    segments[0].y > safeBounds.ymin &&
+    segments[0].y < safeBounds.ymax &&
+    player.ySpeed != 0
+  )
+    moveSeg();
+  else if (segments[0].y >= safeBounds.ymax && player.ySpeed < 0) moveSeg();
+  else if (segments[0].y <= safeBounds.ymin && player.ySpeed > 0) moveSeg();
   else if (player.ySpeed != 0) killPlr();
+}
 
-  xOut.innerHTML = player.x;
-  yOut.innerHTML = player.y;
+function moveSeg() {
+  segments.unshift(
+    newSegment(segments[0].x + player.xSpeed, segments[0].y + player.ySpeed)
+  );
+  segments.pop();
 }
