@@ -11,23 +11,16 @@ let scoreOut = document.getElementById("scoreOut");
 
 // OBJECTS
 
-let player = {
+const player = {
   w: 25,
   h: 25,
-  xSpeed: 0,
+  xSpeed: 25,
   ySpeed: 0,
   speed: 25,
   alive: true,
-  length: 1,
 };
 
-let segments = [
-  { x: 300, y: 300 },
-  { x: 275, y: 300 },
-  { x: 250, y: 300 },
-];
-
-let storedCoords = [];
+const snake = [{ x: 300, y: 300 }];
 
 let nextPrize = {
   x: 0,
@@ -46,8 +39,10 @@ ranPrize();
 // animate
 requestAnimationFrame(animate);
 function animate() {
-  movePlr();
-  segments.forEach(checkPrize);
+  moveSeg();
+  if (isSnakeDead()) return;
+
+  snake.forEach(checkPrize);
 
   clearCnv("white");
   drawPlr();
@@ -56,15 +51,10 @@ function animate() {
   // set framerate to fps
   setTimeout(() => {
     if (player.alive) requestAnimationFrame(animate);
-    else {
-      clearCnv("red");
-      ctx.fillStyle = "white";
-      ctx.fillText("Game Over", cnv.width / 2, cnv.height / 2);
-    }
   }, 1000 / fps);
 }
 
-// HELPER FUNCTIONS
+// FUNCTIONS
 
 // key listener
 document.addEventListener("keydown", keyPressHandler);
@@ -78,7 +68,6 @@ function keyPressHandler(event) {
       changeSpeed(0, player.speed);
     else if (event.key == "d" || event.key == "ArrowRight")
       changeSpeed(player.speed, 0);
-    else if (event.key == "q") changeSpeed(0, 0);
   }
 }
 
@@ -92,29 +81,24 @@ function changeSpeed(xs, ys) {
 function ranPrize() {
   nextPrize.x = randomMul(0, cnv.width - 25, 25);
   nextPrize.y = randomMul(0, cnv.height - 25, 25);
+  snake.forEach((segment) => {
+    const snakeIsHere = segment.x == nextPrize.x && segment.y == nextPrize.y;
+    if (snakeIsHere) ranPrize();
+  });
 }
 
-function killPlr() {
-  player.alive = false;
-}
-
-// check if player is touching prize -> update length + score, randomize new prize
+// check if player is touching prize
 function checkPrize(segment) {
-  if (segment.x === nextPrize.x && segment.y === nextPrize.y) {
-    ranPrize();
-    player.length++;
-    scoreOut.innerHTML = player.length - 1;
-  }
+  if (segment.x === nextPrize.x && segment.y === nextPrize.y) return true;
 }
 
+// return new object with x, y properties
 function newSegment(x, y) {
   return {
     x: x,
     y: y,
   };
 }
-
-// ANIMATE FUNCTIONS
 
 // draw prize at nextPrize location
 function drawPrize() {
@@ -130,38 +114,36 @@ function clearCnv(clr) {
 
 // draw player at player location
 function drawPlr() {
-  segments.forEach(function (segment) {
+  snake.forEach(function (segment) {
     ctx.fillStyle = "black";
     ctx.fillRect(segment.x, segment.y, player.w, player.h);
   });
 }
 
-// move player if within safeBounds + going correct direction if on edge
-function movePlr() {
-  if (
-    segments[0].x > safeBounds.xmin &&
-    segments[0].x < safeBounds.xmax &&
-    player.xSpeed != 0
-  )
-    moveSeg();
-  else if (segments[0].x >= safeBounds.xmax && player.xSpeed < 0) moveSeg();
-  else if (segments[0].x <= safeBounds.xmin && player.xSpeed > 0) moveSeg();
-  else if (player.xSpeed != 0) killPlr();
+// check if snake has collided with itself or wall -> return false
+function isSnakeDead() {
+  for (let i = 4; i < snake.length; i++) {
+    const collided = snake[i].x === snake[0].x && snake[i].y === snake[0].y;
+    if (collided) return true;
+  }
+  const hitLeft = snake[0].x < 0;
+  const hitRight = snake[0].x > cnv.width - player.w;
+  const hitTop = snake[0].y < 0;
+  const hitBottom = snake[0].y > cnv.height - player.h;
 
-  if (
-    segments[0].y > safeBounds.ymin &&
-    segments[0].y < safeBounds.ymax &&
-    player.ySpeed != 0
-  )
-    moveSeg();
-  else if (segments[0].y >= safeBounds.ymax && player.ySpeed < 0) moveSeg();
-  else if (segments[0].y <= safeBounds.ymin && player.ySpeed > 0) moveSeg();
-  else if (player.ySpeed != 0) killPlr();
+  return hitLeft || hitRight || hitTop || hitBottom;
 }
 
 function moveSeg() {
-  segments.unshift(
-    newSegment(segments[0].x + player.xSpeed, segments[0].y + player.ySpeed)
+  const head = newSegment(
+    snake[0].x + player.xSpeed,
+    snake[0].y + player.ySpeed
   );
-  segments.pop();
+  snake.unshift(head);
+  if (checkPrize(head)) ranPrize();
+  else snake.pop();
+}
+
+function addSeg() {
+  snake.push(newSegment(snake[snake.length - 1].x));
 }
