@@ -6,6 +6,10 @@ cnv.width = 600;
 cnv.height = 600;
 ctx.font = "40px Helvetica";
 ctx.textAlign = "center";
+
+let bgColor = "black";
+let snakeColor = "lime";
+let prizeColor = "red";
 const fps = 10;
 let score = 0;
 let scoreOut = document.getElementById("scoreOut");
@@ -59,7 +63,7 @@ function animate() {
 
   snake.forEach(checkPrize);
 
-  clearCnv("white");
+  clearCnv(bgColor);
   drawPlr();
   drawPrize();
 
@@ -127,7 +131,7 @@ function newSegment(x, y) {
 
 // draw prize at nextPrize location
 function drawPrize() {
-  ctx.fillStyle = "lime";
+  ctx.fillStyle = prizeColor;
   ctx.fillRect(nextPrize.x, nextPrize.y, 25, 25);
 }
 
@@ -140,8 +144,7 @@ function clearCnv(clr) {
 // draw each segment at location in array
 function drawPlr() {
   snake.forEach(function (segment) {
-    ctx.fillStyle = "black";
-    ctx.strokeStyle = "white";
+    ctx.fillStyle = snakeColor;
     ctx.strokeRect(segment.x, segment.y, player.w, player.h);
     ctx.fillRect(segment.x, segment.y, player.w, player.h);
   });

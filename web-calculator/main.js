@@ -2,10 +2,9 @@
 let table = document.getElementById("calcTable");
 let outputText = document.getElementById("output");
 let errorText = document.getElementById("errorOut");
-let calcBooleans = {
-  toClear: false,
-  isChanged: false,
-};
+let toClear = false;
+let isChanged = false;
+
 // storage arrays
 const storedNums = [];
 const storedFuncs = [];
@@ -41,8 +40,8 @@ function mathFunc(func) {
   else if (func === "xⁿ") storedFuncs.push("**");
   if (outputText.innerHTML.length != 0) {
     storedNums.push(outputText.innerHTML);
-    calcBooleans.toClear = true;
-    calcBooleans.isChanged = false;
+    toClear = true;
+    isChanged = false;
   }
 }
 
@@ -70,14 +69,14 @@ function calculate() {
   // clear storage
   storedFuncs.length = 0;
   storedNums.length = 0;
-  calcBooleans.toClear = true;
+  toClear = true;
 }
 
 // add number to outputText
 function addNum(btnVal) {
-  if (calcBooleans.toClear) outputText.innerHTML = "";
-  calcBooleans.toClear = false;
-  calcBooleans.isChanged = true;
+  if (toClear) outputText.innerHTML = "";
+  toClear = false;
+  isChanged = true;
   // if trying to add decimal and already contains decimal, give error
   if (btnVal === "." && outputText.innerHTML.includes(btnVal))
     addError("Can't add more than 1 decimal.");
