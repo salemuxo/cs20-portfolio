@@ -3,3 +3,11 @@ body {
   background-color: #454545;
   color: white;
 }
+
+canvas {
+  border: 1px solid black;
+  margin: auto;
+  display: block;
+  position: relative;
+  top: 100px;
+}

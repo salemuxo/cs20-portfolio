@@ -16,8 +16,9 @@ img {
 }
 
 a {
-  color: black;
+  color: white;
   text-decoration: none;
+  font-weight: bold;
 }
 
 #programs-div {
@@ -25,7 +26,7 @@ a {
   margin: auto;
   border: 3px solid white;
   padding: 20px;
-  width: 470px;
+  width: 700px;
   height: 320px;
   border-radius: 10px;
 }
@@ -35,7 +36,7 @@ a {
   padding: 10px;
   margin: auto;
   width: 200px;
-  background-color: white;
+  background-color: #555555;
 }
 
 #calc-div {
