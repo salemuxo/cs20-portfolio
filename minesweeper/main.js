@@ -1,5 +1,5 @@
 // global variables
-let game = {
+const game = {
   tilesX: 9,
   tilesY: 9,
   tilesTotal: 0,
@@ -7,7 +7,6 @@ let game = {
   mineNum: 10,
   isStarted: false,
 };
-
 game.tilesTotal = game.tilesX * game.tilesY;
 
 // create array with tiles
@@ -17,7 +16,8 @@ for (let n = 1; n <= game.tilesTotal; n++) {
   let x = n - (y - 1) * game.tilesX;
   let mine = false;
   let color = "grey";
-  tiles.push({ x, y, mine, color });
+  let adjacentMines = 0;
+  tiles.push({ x, y, mine, color, adjacentMines });
 }
 
 // create canvas
@@ -81,7 +81,10 @@ function initCanvas(firstTile) {
 }
 
 function generateMine(tileExclusion) {
-  let exclusionIndex = findTileIndexFromCoords(tileExclusion);
+  let exclusionIndex = findTileIndexFromCoords(
+    tileExclusion.x,
+    tileExclusion.y
+  );
   let mineIndex = randomInt(0, tiles.length);
   if (mineIndex === exclusionIndex) {
     generateMine(tileExclusion);
@@ -90,21 +93,18 @@ function generateMine(tileExclusion) {
   }
 }
 
-function tileClicked(tile) {
-  if (findTileFromCoords(tile).mine === true) revealMines();
-  else checkTile(tile);
+function tileClicked(clickedTile) {
+  if (findTileFromCoords(clickedTile.x, clickedTile.y).mine === true)
+    revealMines();
+  else checkTile(clickedTile);
 }
 
-function findTileFromCoords(tileToFind) {
-  return tiles.find(
-    (item) => item.x === tileToFind.x && item.y === tileToFind.y
-  );
+function findTileFromCoords(x, y) {
+  return tiles.find((item) => item.x === x && item.y === y);
 }
 
-function findTileIndexFromCoords(tileToFind) {
-  return tiles.findIndex(
-    (item) => item.x === tileToFind.x && item.y === tileToFind.y
-  );
+function findTileIndexFromCoords(x, y) {
+  return tiles.findIndex((item) => item.x === x && item.y === y);
 }
 
 function revealMines() {
@@ -114,16 +114,63 @@ function revealMines() {
   drawGame();
 }
 
-function checkTile(tile) {
-  let borderX, borderY, corner;
-  if (tile.x === 1 || tile.x === game.tilesX) borderX = true;
-  if (tile.y === 1 || tile.y === game.tilesY) borderY = true;
-  if (borderX === true && borderY === true) corner = true;
+function checkTile(tileToCheck) {
+  const adjacentTiles = [];
+  for (let n = 1; n <= 8; n++) {
+    let thisTile = getAdjacent(tileToCheck, n);
+    if (thisTile === "no tile") continue;
+    else adjacentTiles.push(thisTile);
+  }
+  let adjacentMineCount = 0;
+  for (let i = 0; i < adjacentTiles.length; i++) {
+    if (adjacentTiles[i].mine == true) adjacentMineCount++;
+  }
+  tiles[findTileIndexFromCoords(tileToCheck.x, tileToCheck.y)].adjacentMines =
+    adjacentMineCount;
+  console.log(findTileFromCoords(tileToCheck.x, tileToCheck.y));
+}
 
-  let adjacentTiles = 8;
-  if (corner) adjacentTiles -= 5;
-  else if (borderX || borderY) adjacentTiles -= 3;
-  console.log(adjacentTiles);
-
-  for (n = 1; n <= adjacentTiles; n++) {}
+// return tile from direction -- direction numbers are like clock
+function getAdjacent(tile, dir) {
+  let adjacentTile = {
+    x: tile.x,
+    y: tile.y,
+  };
+  if (dir === 1) {
+    // up
+    adjacentTile.y--;
+  } else if (dir === 2) {
+    // up right
+    adjacentTile.x++;
+    adjacentTile.y--;
+  } else if (dir === 3) {
+    // right
+    adjacentTile.x++;
+  } else if (dir === 4) {
+    // down right
+    adjacentTile.x++;
+    adjacentTile.y++;
+  } else if (dir === 5) {
+    // down
+    adjacentTile.y++;
+  } else if (dir === 6) {
+    // down left
+    adjacentTile.x--;
+    adjacentTile.y++;
+  } else if (dir === 7) {
+    // left
+    adjacentTile.x--;
+  } else if (dir === 8) {
+    // up left
+    adjacentTile.x--;
+    adjacentTile.y--;
+  }
+  if (
+    adjacentTile.x < 1 ||
+    adjacentTile.x > game.tilesX ||
+    adjacentTile.y < 1 ||
+    adjacentTile.y > game.tilesY
+  )
+    return "no tile";
+  else return findTileFromCoords(adjacentTile.x, adjacentTile.y);
 }
