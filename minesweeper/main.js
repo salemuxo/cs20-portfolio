@@ -112,20 +112,24 @@ function generateMine(tileExclusion) {
   }
 }
 
+// check if clicked tile is mine -> reveal mines, otherwise check adjacent tiles
 function tileClicked(clickedTile) {
   if (findTileFromCoords(clickedTile.x, clickedTile.y).mine === true)
     revealMines();
   else checkTile(clickedTile);
 }
 
+// find tile object from array given x, y coordinates
 function findTileFromCoords(x, y) {
   return tiles.find((item) => item.x === x && item.y === y);
 }
 
+// find tile index in array given x, y coordinates
 function findTileIndexFromCoords(x, y) {
   return tiles.findIndex((item) => item.x === x && item.y === y);
 }
 
+// reveal all mines
 function revealMines() {
   for (let i = 0; i < tiles.length; i++) {
     if (tiles[i].mine === true) tiles[i].color = "red";
@@ -188,6 +192,7 @@ function getAdjacent(tile, dir) {
     adjacentTile.y--;
   }
   if (
+    // out of bounds
     adjacentTile.x < 1 ||
     adjacentTile.x > game.tilesX ||
     adjacentTile.y < 1 ||
