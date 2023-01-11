@@ -17,7 +17,9 @@ for (let n = 1; n <= game.tilesTotal; n++) {
   let mine = false;
   let color = "grey";
   let adjacentMines = 0;
-  tiles.push({ x, y, mine, color, adjacentMines });
+  let drawNum = false;
+
+  tiles.push({ x, y, mine, color, adjacentMines, drawNum });
 }
 
 // create canvas
@@ -27,12 +29,18 @@ let ctx = cnv.getContext("2d");
 cnv.width = game.tilesX * game.tileSize;
 cnv.height = game.tilesY * game.tileSize;
 
-// MAIN FUNCTIONS
+// FUNCTIONS
 
 drawGame();
 function drawGame() {
   for (let i = 0; i < tiles.length; i++) {
-    drawTile(tiles[i].x, tiles[i].y, tiles[i].color);
+    drawTile(
+      tiles[i].x,
+      tiles[i].y,
+      tiles[i].color,
+      tiles[i].adjacentMines,
+      tiles[i].drawNum
+    );
   }
 }
 
@@ -42,11 +50,9 @@ cnv.onmousedown = function (ev) {
     x: Math.ceil(ev.layerX / game.tileSize),
     y: Math.ceil(ev.layerY / game.tileSize),
   };
-  if (!game.isStarted) initCanvas(clickedTile);
+  if (!game.isStarted) initGame(clickedTile);
   else tileClicked(clickedTile);
 };
-
-// HELPER FUNCTIONS
 
 // fill full canvas with color
 function fillCanvas(color) {
@@ -55,7 +61,7 @@ function fillCanvas(color) {
 }
 
 // draw tile at (x, y) with color
-function drawTile(x, y, color) {
+function drawTile(x, y, color, adjacentMines, toDrawNum) {
   ctx.fillStyle = color;
   ctx.strokeStyle = "white";
   ctx.fillRect(
@@ -70,9 +76,21 @@ function drawTile(x, y, color) {
     game.tileSize,
     game.tileSize
   );
+
+  // write adjacent mine number
+  if (toDrawNum) {
+    ctx.font = "40px Arial";
+    ctx.fillStyle = "red";
+    ctx.fillText(
+      adjacentMines,
+      (x - 1) * game.tileSize + game.tileSize / 4,
+      y * game.tileSize - game.tileSize / 4
+    );
+  }
 }
 
-function initCanvas(firstTile) {
+// initialize game -- generate mines, set isStarted
+function initGame(firstTile) {
   for (let n = 1; n <= game.mineNum; n++) {
     generateMine(firstTile);
   }
@@ -80,6 +98,7 @@ function initCanvas(firstTile) {
   tileClicked(firstTile);
 }
 
+// generate mine -- not allowed at first tile clicked
 function generateMine(tileExclusion) {
   let exclusionIndex = findTileIndexFromCoords(
     tileExclusion.x,
@@ -114,7 +133,9 @@ function revealMines() {
   drawGame();
 }
 
-function checkTile(tileToCheck) {
+// check tiles adjacent to tile
+function checkTile(tile) {
+  let tileToCheck = findTileFromCoords(tile.x, tile.y);
   const adjacentTiles = [];
   for (let n = 1; n <= 8; n++) {
     let thisTile = getAdjacent(tileToCheck, n);
@@ -125,9 +146,10 @@ function checkTile(tileToCheck) {
   for (let i = 0; i < adjacentTiles.length; i++) {
     if (adjacentTiles[i].mine == true) adjacentMineCount++;
   }
-  tiles[findTileIndexFromCoords(tileToCheck.x, tileToCheck.y)].adjacentMines =
-    adjacentMineCount;
-  console.log(findTileFromCoords(tileToCheck.x, tileToCheck.y));
+  tileToCheck.adjacentMines = adjacentMineCount;
+  tileToCheck.drawNum = true;
+  console.log(tileToCheck);
+  drawGame();
 }
 
 // return tile from direction -- direction numbers are like clock
